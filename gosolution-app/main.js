@@ -16,18 +16,28 @@ const map = new Map({
   //creating the Layers
   layers: [
     new TileLayer({
-      source: //new OGCMapTile({
-        new OSM()
+    source: new OGCMapTile({
+     
+      url: 'https://maps.ecere.com/ogcapi/collections/blueMarble/map/tiles/WebMercatorQuad',
     }),
-    new VectorTileLayer({
-      source: new OGCVectorTile({
-        url: 'https://maps.ecere.com/ogcapi/collections/NaturalEarth:cultural:ne_10m_admin_0_countries/tiles/WebMercatorQuad',
-        format: new MVT(),
-      }),
-    }),
-  ],
+  })],
+
   view: new View({
     center: [0, 0],
     zoom: 1,
   }),
 });
+(async () => {
+  const airports = await fetch('https://demo.ldproxy.net/zoomstack/collections/airports/items?limit=100', {
+    headers: {
+      'Accept': 'application/geo+json'
+    }
+  }).then(response => response.json());
+
+  map.addLayer(new ol.layer.Vector({
+    source: new ol.source.Vector({
+      features: new ol.format.GeoJSON().readFeatures(airports, { featureProjection: 'EPSG:3857' }),
+      attributions: 'Contains OS data &copy; Crown copyright and database right 2021.'
+    })
+  }));
+})();
